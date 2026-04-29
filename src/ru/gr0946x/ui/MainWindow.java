@@ -8,6 +8,8 @@ import ru.gr0946x.ui.painting.Painter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static java.lang.Math.*;
 
@@ -17,6 +19,8 @@ public class MainWindow extends JFrame {
     private final Painter painter;
     private final Fractal mandelbrot;
     private final Converter conv;
+    private final Deque<FractalState> undoStack = new ArrayDeque<>();
+
     public MainWindow(){
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(800, 650));
@@ -44,6 +48,11 @@ public class MainWindow extends JFrame {
         });
 
         mainPanel.addSelectListener((r)->{
+            undoStack.push(new FractalState(
+                    conv.getXMin(), conv.getXMax(),
+                    conv.getYMin(), conv.getYMax()
+            ));
+            if (undoStack.size() > 100) undoStack.pollLast();
             var xMin = conv.xScr2Crt(r.x);
             var xMax = conv.xScr2Crt(r.x + r.width);
             var yMin = conv.yScr2Crt(r.y + r.height);
@@ -53,6 +62,15 @@ public class MainWindow extends JFrame {
             mainPanel.repaint();
         });
         setContent();
+    }
+
+    public void undo() {
+        if (!undoStack.isEmpty()) {
+            FractalState state = undoStack.pop();
+            conv.setXShape(state.xMin, state.xMax);
+            conv.setYShape(state.yMin, state.yMax);
+            mainPanel.repaint();
+        }
     }
 
     private void setContent(){
