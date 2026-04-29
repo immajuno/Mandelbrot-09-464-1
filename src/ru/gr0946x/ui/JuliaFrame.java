@@ -12,7 +12,6 @@ public class JuliaFrame extends JFrame {
 
     private static final int WIDTH = 600;
     private static final int HEIGHT = 600;
-    private static final int MAX_ITER = 300;
 
     private double zoom = 1.0;
     private double offsetX = 0;
@@ -73,20 +72,25 @@ public class JuliaFrame extends JFrame {
             super.paintComponent(g);
             BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 
+            // В переменной zoom хранится масштаб (чем меньше значение, тем ближе).
+            // Считаем динамическое количество итераций (базово 300)
+            int currentMaxIter = (int) (300 + 150 * Math.abs(Math.log10(zoom)));
+            currentMaxIter = Math.max(100, Math.min(currentMaxIter, 2000)); // Защита от зависаний
+
             for (int x = 0; x < getWidth(); x++) {
                 for (int y = 0; y < getHeight(); y++) {
                     double zr = (x - getWidth() / 2.0) * zoom / getWidth() * 3.0 + offsetX;
                     double zi = (y - getHeight() / 2.0) * zoom / getHeight() * 2.0 + offsetY;
 
                     int iter = 0;
-                    while (zr * zr + zi * zi < 4.0 && iter < MAX_ITER) {
+                    while (zr * zr + zi * zi < 4.0 && iter < currentMaxIter) {
                         double temp = zr * zr - zi * zi + realC;
                         zi = 2.0 * zr * zi + imagC;
                         zr = temp;
                         iter++;
                     }
 
-                    int color = getColor(iter, MAX_ITER);
+                    int color = getColor(iter, currentMaxIter);
                     image.setRGB(x, y, color);
                 }
             }

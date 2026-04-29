@@ -50,6 +50,16 @@ public class MainWindow extends JFrame {
             var yMax = conv.yScr2Crt(r.y);
             conv.setXShape(xMin, xMax);
             conv.setYShape(yMin, yMax);
+
+            // Вычисляем ширину текущего окна (чем она меньше, тем сильнее зум)
+            double currentWidth = xMax - xMin;
+            // Изначальная ширина примерно 3.0. Считаем логарифм отношения для плавного роста итераций.
+            // Базово 100 итераций, добавляем по 100 за каждый порядок приближения.
+            int newIterations = (int) (100 + 100 * Math.abs(Math.log10(currentWidth / 3.0)));
+            // Ограничиваем сверху, чтобы программа не зависла намертво при диком зуме (максимум 2000)
+            newIterations = Math.min(newIterations, 2000);
+
+            ((Mandelbrot)mandelbrot).setMaxIterations(newIterations);
             mainPanel.repaint();
         });
         setContent();
