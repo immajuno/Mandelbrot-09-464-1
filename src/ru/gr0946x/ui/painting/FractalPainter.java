@@ -3,14 +3,18 @@ package ru.gr0946x.ui.painting;
 import ru.gr0946x.Converter;
 import ru.gr0946x.ui.fractals.ColorFunction;
 import ru.gr0946x.ui.fractals.Fractal;
-
 import java.awt.*;
 
-public class FractalPainter implements Painter{
+public class FractalPainter implements Painter {
 
     private final Fractal fractal;
     private final Converter conv;
     private final ColorFunction colorFunction;
+
+    public Converter getConverter() {
+        return conv;
+    }
+
     @Override
     public int getWidth() {
         return conv.getWidth();
