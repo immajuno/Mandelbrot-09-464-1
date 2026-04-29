@@ -31,6 +31,18 @@ public class MainWindow extends JFrame {
         });
         mainPanel = new SelectablePanel(painter);
         mainPanel.setBackground(Color.WHITE);
+
+        mainPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (javax.swing.SwingUtilities.isLeftMouseButton(e)) {
+                    double real = conv.xScr2Crt(e.getX());
+                    double imag = conv.yScr2Crt(e.getY());
+                    new JuliaFrame(real, imag);
+                }
+            }
+        });
+
         mainPanel.addSelectListener((r)->{
             var xMin = conv.xScr2Crt(r.x);
             var xMax = conv.xScr2Crt(r.x + r.width);
