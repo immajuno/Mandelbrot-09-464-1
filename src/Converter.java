@@ -45,18 +45,19 @@ public class Converter {
     // ── Обновление параметров ─────────────────────────────────────────────────
 
     /** Обновляет область комплексной плоскости (при zoom/pan). */
-    public void setComplexBounds(double reMin, double reMax,
-                                  double imMin, double imMax) {
+    public void setComplexBounds(double reMin, double reMax, double imMin, double imMax) {
         this.reMin = reMin;
         this.reMax = reMax;
         this.imMin = imMin;
         this.imMax = imMax;
+        keepProportions();
     }
 
     /** Обновляет размеры экрана (при изменении размеров окна). */
     public void setScreenSize(int width, int height) {
         this.screenWidth  = width;
         this.screenHeight = height;
+        keepProportions();
     }
 
     // ── Геттеры ───────────────────────────────────────────────────────────────
@@ -72,5 +73,16 @@ public class Converter {
     public String toString() {
         return String.format("Re[%.6f, %.6f]  Im[%.6f, %.6f]  Screen[%dx%d]",
                 reMin, reMax, imMin, imMax, screenWidth, screenHeight);
+    }
+
+    private void keepProportions() {
+        if (screenWidth <= 0 || screenHeight <= 0) return;
+
+        double widthRe = reMax - reMin;
+        double requiredHeight = widthRe * screenHeight / screenWidth;
+        double centerIm = (imMin + imMax) / 2;
+
+        imMin = centerIm - requiredHeight / 2;
+        imMax = centerIm + requiredHeight / 2;
     }
 }
