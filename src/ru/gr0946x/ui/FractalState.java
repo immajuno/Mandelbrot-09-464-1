@@ -1,3 +1,4 @@
+package ru.gr0946x.ui;
 import java.io.Serializable;
 
 public class FractalState implements Serializable {
