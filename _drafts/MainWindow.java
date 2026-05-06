@@ -9,31 +9,50 @@ import ru.gr0946x.ui.painting.Painter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 import static java.lang.Math.*;
 
 public class MainWindow extends JFrame {
 
     private final SelectablePanel mainPanel;
-    private final Painter painter;
+    private final FractalPainter painter;
     private final Fractal mandelbrot;
     private final Converter conv;
-    private final Deque<FractalState> undoStack = new ArrayDeque<>();
 
-    public MainWindow(){
+    public MainWindow() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(800, 650));
         mandelbrot = new Mandelbrot();
         conv = new Converter(-2.0, 1.0, -1.0, 1.0);
-        painter = new FractalPainter(mandelbrot, conv, (value)->{
-            if (value == 1.0) return Color.BLACK;
-            var r = (float)abs(sin(5 * value));
-            var g = (float)abs(cos(8 * value) * sin (3 * value));
-            var b = (float)abs((sin(7 * value) + cos(15 * value)) / 2f);
-            return new Color(r, g, b);
+        painter = new FractalPainter(conv);
+
+        painter.setFractalFunction((cReal, cImag, maxIter) -> {
+            double zReal = 0;
+            double zImag = 0;
+            int iter = 0;
+            while (iter < maxIter) {
+                double nextZReal = zReal * zReal - zImag * zImag + cReal;
+                double nextZImag = 2 * zReal * zImag + cImag;
+                zReal = nextZReal;
+                zImag = nextZImag;
+                if (zReal * zReal + zImag * zImag > 4.0) break;
+                iter++;
+            }
+            return iter;
         });
+
+        painter.setColorScheme((iterations, maxIter) -> {
+            if (iterations == maxIter) {
+                return new int[]{0, 0, 0};
+            } else {
+                float value = (float) iterations / maxIter;
+                int r = (int) (Math.abs(Math.sin(5 * value)) * 255);
+                int g = (int) (Math.abs(Math.cos(8 * value) * Math.sin(3 * value)) * 255);
+                int b = (int) (Math.abs((Math.sin(7 * value) + Math.cos(15 * value)) / 2f) * 255);
+                return new int[]{r, g, b};
+            }
+        });
+
         mainPanel = new SelectablePanel(painter);
         mainPanel.setBackground(Color.WHITE);
 
@@ -48,30 +67,16 @@ public class MainWindow extends JFrame {
             }
         });
 
-        mainPanel.addSelectListener((r)->{
-            undoStack.push(new FractalState(
-                    conv.getXMin(), conv.getXMax(),
-                    conv.getYMin(), conv.getYMax()
-            ));
-            if (undoStack.size() > 100) undoStack.pollLast();
+        mainPanel.addSelectListener((r) -> {
             var xMin = conv.xScr2Crt(r.x);
             var xMax = conv.xScr2Crt(r.x + r.width);
             var yMin = conv.yScr2Crt(r.y + r.height);
             var yMax = conv.yScr2Crt(r.y);
             conv.setXShape(xMin, xMax);
             conv.setYShape(yMin, yMax);
-
-            // Вычисляем ширину текущего окна (чем она меньше, тем сильнее зум)
-            double currentWidth = xMax - xMin;
-            // Изначальная ширина примерно 3.0. Считаем логарифм отношения для плавного роста итераций.
-            // Базово 100 итераций, добавляем по 100 за каждый порядок приближения.
-            int newIterations = (int) (100 + 100 * Math.abs(Math.log10(currentWidth / 3.0)));
-            // Ограничиваем сверху, чтобы программа не зависла намертво при диком зуме (максимум 2000)
-            newIterations = Math.min(newIterations, 2000);
-
-            ((Mandelbrot)mandelbrot).setMaxIterations(newIterations);
             mainPanel.repaint();
         });
+
         setContent();
         createMenu();
     }
@@ -90,16 +95,7 @@ public class MainWindow extends JFrame {
         setJMenuBar(menuBar);
     }
 
-    public void undo() {
-        if (!undoStack.isEmpty()) {
-            FractalState state = undoStack.pop();
-            conv.setXShape(state.xMin, state.xMax);
-            conv.setYShape(state.yMin, state.yMax);
-            mainPanel.repaint();
-        }
-    }
-
-    private void setContent(){
+    private void setContent() {
         var gl = new GroupLayout(getContentPane());
         setLayout(gl);
         gl.setVerticalGroup(gl.createSequentialGroup()
