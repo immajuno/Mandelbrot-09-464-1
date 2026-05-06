@@ -5,13 +5,10 @@ import ru.gr0946x.Converter;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Окно настройки ключевых кадров для анимированной экскурсии по фракталу.
- */
 public class AnimationSettingsFrame extends JFrame {
 
     private final Converter conv;
@@ -19,16 +16,13 @@ public class AnimationSettingsFrame extends JFrame {
     private final JTable table;
     private final DefaultTableModel tableModel;
     private final JTextField totalTimeField;
-    private final JButton addButton;
-    private final JButton removeButton;
-    private final JButton previewButton;
-    private final JButton saveVideoButton;
+    private final JLabel statusLabel;
 
     public AnimationSettingsFrame(Converter conv) {
         this.conv = conv;
 
         setTitle("Экскурсия по фракталу — настройка анимации");
-        setSize(650, 500);
+        setSize(700, 550);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -37,7 +31,7 @@ public class AnimationSettingsFrame extends JFrame {
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column >= 1; // только данные редактируемы, № — нет
+                return column >= 1;
             }
         };
         table = new JTable(tableModel);
@@ -47,10 +41,10 @@ public class AnimationSettingsFrame extends JFrame {
         // ── Кнопки управления кадрами ───────────────────────────────────
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        addButton = new JButton("+ Добавить текущий вид");
+        JButton addButton = new JButton("+ Добавить текущий вид");
         addButton.addActionListener(e -> addCurrentView());
 
-        removeButton = new JButton("− Удалить выбранный");
+        JButton removeButton = new JButton("− Удалить выбранный");
         removeButton.addActionListener(e -> removeSelected());
 
         JButton moveUpButton = new JButton("▲ Вверх");
@@ -74,14 +68,19 @@ public class AnimationSettingsFrame extends JFrame {
         autoDistributeButton.addActionListener(e -> autoDistributeTime());
         timePanel.add(autoDistributeButton);
 
+        // ── Статус ─────────────────────────────────────────────────────
+        statusLabel = new JLabel("Готово");
+        statusLabel.setForeground(Color.GRAY);
+
         // ── Кнопки действий ────────────────────────────────────────────
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        previewButton = new JButton("Предпросмотр");
+        JButton previewButton = new JButton("Предпросмотр");
         previewButton.addActionListener(e -> startPreview());
 
-        saveVideoButton = new JButton("Сохранить видео...");
+        JButton saveVideoButton = new JButton("Сохранить видео...");
         saveVideoButton.addActionListener(e -> saveVideo());
 
+        actionPanel.add(statusLabel);
         actionPanel.add(previewButton);
         actionPanel.add(saveVideoButton);
 
@@ -95,7 +94,6 @@ public class AnimationSettingsFrame extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
         add(actionPanel, BorderLayout.SOUTH);
 
-        // Добавляем стартовый кадр — текущий вид
         addCurrentView();
     }
 
@@ -104,7 +102,7 @@ public class AnimationSettingsFrame extends JFrame {
     private void addCurrentView() {
         double totalTime = parseTotalTime();
         double lastTime = keyFrames.isEmpty() ? 0 : keyFrames.get(keyFrames.size() - 1).timeSeconds;
-        double newTime = keyFrames.isEmpty() ? 0 : lastTime + totalTime / 5; // шаг по умолчанию
+        double newTime = keyFrames.isEmpty() ? 0 : lastTime + totalTime / 5;
 
         KeyFrame kf = new KeyFrame(
                 conv.getXMin(), conv.getXMax(),
@@ -144,11 +142,9 @@ public class AnimationSettingsFrame extends JFrame {
         int newRow = row + delta;
         if (row < 0 || newRow < 0 || newRow >= keyFrames.size()) return;
 
-        // Меняем в списке
         KeyFrame kf = keyFrames.remove(row);
         keyFrames.add(newRow, kf);
 
-        // Перестраиваем таблицу
         tableModel.setRowCount(0);
         for (int i = 0; i < keyFrames.size(); i++) {
             addRow(keyFrames.get(i), i + 1);
@@ -164,7 +160,7 @@ public class AnimationSettingsFrame extends JFrame {
 
     private void autoDistributeTime() {
         double totalTime = parseTotalTime();
-        if (keyFrames.isEmpty()) return;
+        if (keyFrames.size() < 2) return;
 
         double step = totalTime / (keyFrames.size() - 1);
         for (int i = 0; i < keyFrames.size(); i++) {
@@ -181,11 +177,8 @@ public class AnimationSettingsFrame extends JFrame {
         }
     }
 
-    // ── Синхронизация таблицы → список (перед использованием) ──────────
-
     /**
      * Считывает данные из таблицы обратно в список keyFrames.
-     * Вызывать перед рендерингом.
      */
     public List<KeyFrame> getKeyFrames() {
         for (int i = 0; i < keyFrames.size() && i < tableModel.getRowCount(); i++) {
@@ -201,17 +194,123 @@ public class AnimationSettingsFrame extends JFrame {
         return new ArrayList<>(keyFrames);
     }
 
-    // ── Заглушки для кнопок (реализуем позже) ──────────────────────────
+    // ── Предпросмотр и сохранение видео ────────────────────────────────
 
     private void startPreview() {
-        JOptionPane.showMessageDialog(this,
-                "Предпросмотр будет реализован после создания рендерера.",
-                "Инфо", JOptionPane.INFORMATION_MESSAGE);
+        List<KeyFrame> frames = getKeyFrames();
+        if (frames.size() < 2) {
+            JOptionPane.showMessageDialog(this,
+                    "Добавьте минимум 2 ключевых кадра.",
+                    "Ошибка", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Отключаем кнопки на время рендеринга
+        setButtonsEnabled(false);
+        statusLabel.setText("Рендеринг предпросмотра...");
+
+        new Thread(() -> {
+            try {
+                AnimationRenderer renderer = new AnimationRenderer(frames, conv);
+                java.util.List<File> frameFiles = renderer.renderAllFrames(null);
+
+                // Показываем кадры в окне предпросмотра
+                SwingUtilities.invokeLater(() -> {
+                    new PreviewFrame(frameFiles).setVisible(true);
+                    statusLabel.setText("Предпросмотр готов (" + frameFiles.size() + " кадров)");
+                    setButtonsEnabled(true);
+                });
+
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this,
+                            "Ошибка рендеринга: " + ex.getMessage(),
+                            "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    statusLabel.setText("Ошибка");
+                    setButtonsEnabled(true);
+                });
+            }
+        }).start();
     }
 
     private void saveVideo() {
-        JOptionPane.showMessageDialog(this,
-                "Сохранение видео будет реализовано после создания рендерера.",
-                "Инфо", JOptionPane.INFORMATION_MESSAGE);
+        List<KeyFrame> frames = getKeyFrames();
+        if (frames.size() < 2) {
+            JOptionPane.showMessageDialog(this,
+                    "Добавьте минимум 2 ключевых кадра.",
+                    "Ошибка", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Диалог сохранения
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Сохранить видео");
+        chooser.setSelectedFile(new File("fractal_tour.mp4"));
+        chooser.addChoosableFileFilter(
+                new javax.swing.filechooser.FileNameExtensionFilter("MP4 Video (*.mp4)", "mp4"));
+
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File videoFile = chooser.getSelectedFile();
+        if (!videoFile.getName().toLowerCase().endsWith(".mp4")) {
+            videoFile = new File(videoFile.getAbsolutePath() + ".mp4");
+        }
+
+        setButtonsEnabled(false);
+        statusLabel.setText("Рендеринг видео...");
+
+        final File finalVideoFile = videoFile;
+        new Thread(() -> {
+            try {
+                AnimationRenderer renderer = new AnimationRenderer(frames, conv);
+                renderer.renderAllFrames(statusLabel);
+
+                File result = renderer.assembleVideo(finalVideoFile);
+
+                SwingUtilities.invokeLater(() -> {
+                    if (result != null) {
+                        statusLabel.setText("Видео сохранено: " + result.getName());
+                        JOptionPane.showMessageDialog(this,
+                                "Видео сохранено:\n" + result.getAbsolutePath(),
+                                "Готово", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        statusLabel.setText("Кадры сохранены в папку (ffmpeg не найден)");
+                        JOptionPane.showMessageDialog(this,
+                                "FFmpeg не установлен.\nКадры сохранены в папку animation_frames.\n" +
+                                        "Установите ffmpeg или используйте кадры для сборки видео вручную.",
+                                "Инфо", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                    setButtonsEnabled(true);
+                });
+
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this,
+                            "Ошибка: " + ex.getMessage(),
+                            "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    statusLabel.setText("Ошибка");
+                    setButtonsEnabled(true);
+                });
+            }
+        }).start();
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        // Отключаем/включаем все кнопки, кроме закрытия окна
+        for (java.awt.Component comp : getContentPane().getComponents()) {
+            setEnabledRecursive(comp, enabled);
+        }
+    }
+
+    private void setEnabledRecursive(java.awt.Component comp, boolean enabled) {
+        if (comp instanceof JPanel || comp instanceof JScrollPane) {
+            for (java.awt.Component child : ((java.awt.Container) comp).getComponents()) {
+                setEnabledRecursive(child, enabled);
+            }
+        } else if (comp instanceof JButton || comp instanceof JTable || comp instanceof JTextField) {
+            comp.setEnabled(enabled);
+        }
     }
 }
