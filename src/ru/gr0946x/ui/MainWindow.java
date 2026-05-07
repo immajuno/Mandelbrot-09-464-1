@@ -1,10 +1,7 @@
 package ru.gr0946x.ui;
 
 import ru.gr0946x.Converter;
-<<<<<<< HEAD
-=======
 import ru.gr0946x.ui.animation.AnimationSettingsFrame;
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
 import ru.gr0946x.ui.fractals.Fractal;
 import ru.gr0946x.ui.fractals.Mandelbrot;
 import ru.gr0946x.ui.painting.FractalPainter;
@@ -12,14 +9,10 @@ import ru.gr0946x.ui.painting.Painter;
 
 import javax.swing.*;
 import java.awt.*;
-<<<<<<< HEAD
-
-=======
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static javax.swing.SwingUtilities.invokeLater;
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
 import static java.lang.Math.*;
 
 public class MainWindow extends JFrame {
@@ -28,11 +21,8 @@ public class MainWindow extends JFrame {
     private final Painter painter;
     private final Fractal mandelbrot;
     private final Converter conv;
-<<<<<<< HEAD
-=======
     private final Deque<FractalState> undoStack = new ArrayDeque<>();
 
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
     public MainWindow(){
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(800, 650));
@@ -47,9 +37,6 @@ public class MainWindow extends JFrame {
         });
         mainPanel = new SelectablePanel(painter);
         mainPanel.setBackground(Color.WHITE);
-<<<<<<< HEAD
-        mainPanel.addSelectListener((r)->{
-=======
 
         mainPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -66,18 +53,12 @@ public class MainWindow extends JFrame {
         mainPanel.addSelectListener((r) -> {
             pushUndo();
 
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
             var xMin = conv.xScr2Crt(r.x);
             var xMax = conv.xScr2Crt(r.x + r.width);
             var yMin = conv.yScr2Crt(r.y + r.height);
             var yMax = conv.yScr2Crt(r.y);
             conv.setXShape(xMin, xMax);
             conv.setYShape(yMin, yMax);
-<<<<<<< HEAD
-            mainPanel.repaint();
-        });
-        setContent();
-=======
 
             double currentWidth = xMax - xMin;
             int newIterations = (int) (100 + 100 * Math.abs(Math.log10(currentWidth / 3.0)));
@@ -287,7 +268,6 @@ public class MainWindow extends JFrame {
             ((Mandelbrot) mandelbrot).setMaxIterations(state.maxIterations);
             mainPanel.repaint();
         }
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
     }
 
     private void setContent(){
@@ -304,8 +284,4 @@ public class MainWindow extends JFrame {
                 .addGap(8)
         );
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
