@@ -6,22 +6,22 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class JuliaFrame extends JFrame {
-    private final double realC;
-    private final double imagC;
-    private JuliaPanel juliaPanel;
+    private final double[] cValues = new double[2]; // [0] = realC, [1] = imagC
+    private final JuliaPanel juliaPanel;
 
     private static final int WIDTH = 600;
     private static final int HEIGHT = 600;
+    private static final int MAX_ITER = 300;
 
     private double zoom = 1.0;
     private double offsetX = 0;
     private double offsetY = 0;
 
     public JuliaFrame(double realC, double imagC) {
-        this.realC = realC;
-        this.imagC = imagC;
+        cValues[0] = realC;
+        cValues[1] = imagC;
 
-        setTitle("Julia Set: C = " + String.format("%.4f", realC) + " + " + String.format("%.4f", imagC) + "i");
+        updateTitle();
         setSize(WIDTH, HEIGHT);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -30,24 +30,42 @@ public class JuliaFrame extends JFrame {
         add(juliaPanel);
 
         // Масштабирование колёсиком мыши
-        juliaPanel.addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (e.getWheelRotation() < 0) zoom *= 1.2;
-                else zoom /= 1.2;
-                juliaPanel.repaint();
-            }
+        juliaPanel.addMouseWheelListener(e -> {
+            if (e.getWheelRotation() < 0) zoom *= 1.2;
+            else zoom /= 1.2;
+            juliaPanel.repaint();
         });
 
-        // Перемещение правой кнопкой
+        // Перемещение правой кнопкой и выбор точки C левой кнопкой
         MouseAdapter ma = new MouseAdapter() {
             private Point lastPoint;
+
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     lastPoint = e.getPoint();
+                } else if (SwingUtilities.isLeftMouseButton(e)) {
+                    // Получаем координаты клика и преобразуем их в комплексное число
+                    double newRealC = (e.getX() - getWidth() / 2.0) * zoom / getWidth() * 3.0 + offsetX;
+                    double newImagC = (e.getY() - getHeight() / 2.0) * zoom / getHeight() * 2.0 + offsetY;
+
+                    // Обновляем параметры C через массив
+                    cValues[0] = newRealC;
+                    cValues[1] = newImagC;
+
+                    // Сбрасываем зум и смещение
+                    zoom = 1.0;
+                    offsetX = 0;
+                    offsetY = 0;
+
+                    // Обновляем заголовок окна
+                    updateTitle();
+
+                    // Перерисовываем
+                    juliaPanel.repaint();
                 }
             }
+
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e) && lastPoint != null) {
@@ -60,10 +78,15 @@ public class JuliaFrame extends JFrame {
                 }
             }
         };
+
         juliaPanel.addMouseListener(ma);
         juliaPanel.addMouseMotionListener(ma);
 
         setVisible(true);
+    }
+
+    private void updateTitle() {
+        setTitle("Julia Set: C = " + String.format("%.4f", cValues[0]) + " + " + String.format("%.4f", cValues[1]) + "i");
     }
 
     private class JuliaPanel extends JPanel {
@@ -72,29 +95,32 @@ public class JuliaFrame extends JFrame {
             super.paintComponent(g);
             BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 
-            // В переменной zoom хранится масштаб (чем меньше значение, тем ближе).
-            // Считаем динамическое количество итераций (базово 300)
-            int currentMaxIter = (int) (300 + 150 * Math.abs(Math.log10(zoom)));
-            currentMaxIter = Math.max(100, Math.min(currentMaxIter, 2000)); // Защита от зависаний
-
             for (int x = 0; x < getWidth(); x++) {
                 for (int y = 0; y < getHeight(); y++) {
                     double zr = (x - getWidth() / 2.0) * zoom / getWidth() * 3.0 + offsetX;
                     double zi = (y - getHeight() / 2.0) * zoom / getHeight() * 2.0 + offsetY;
 
                     int iter = 0;
-                    while (zr * zr + zi * zi < 4.0 && iter < currentMaxIter) {
-                        double temp = zr * zr - zi * zi + realC;
-                        zi = 2.0 * zr * zi + imagC;
+                    while (zr * zr + zi * zi < 4.0 && iter < MAX_ITER) {
+                        double temp = zr * zr - zi * zi + cValues[0];
+                        zi = 2.0 * zr * zi + cValues[1];
                         zr = temp;
                         iter++;
                     }
 
-                    int color = getColor(iter, currentMaxIter);
+                    int color = getColor(iter, MAX_ITER);
                     image.setRGB(x, y, color);
                 }
             }
             g.drawImage(image, 0, 0, null);
+
+            // Отображаем текущие координаты C на панели
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            String cText = String.format("C = %.4f + %.4fi (Click to select)", cValues[0], cValues[1]);
+            FontMetrics fm = g.getFontMetrics();
+            int textWidth = fm.stringWidth(cText);
+            g.drawString(cText, 10, 20);
         }
     }
 
