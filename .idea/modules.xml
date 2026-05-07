@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/Mandelbrot-09-46x.iml" filepath="$PROJECT_DIR$/Mandelbrot-09-46x.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/Mandelbrot-fixed.iml" filepath="$PROJECT_DIR$/Mandelbrot-fixed.iml" />
+>>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
     </modules>
   </component>
 </project>

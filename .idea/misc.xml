@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 <project version="4">
   <component name="ProjectRootManager" version="2" default="true" project-jdk-name="25" project-jdk-type="JavaSDK">
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectRootManager" version="2" project-jdk-name="25" project-jdk-type="JavaSDK">
+>>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>
