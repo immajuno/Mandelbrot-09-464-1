@@ -43,7 +43,7 @@ public class MainWindow extends JFrame {
                 if (javax.swing.SwingUtilities.isLeftMouseButton(e)) {
                     double real = conv.xScr2Crt(e.getX());
                     double imag = conv.yScr2Crt(e.getY());
-                    new JuliaFrame(real, imag);
+                    new JuliaFrame(real, imag, MainWindow.this);
                 }
             }
         });
