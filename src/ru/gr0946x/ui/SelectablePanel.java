@@ -1,31 +1,12 @@
 package ru.gr0946x.ui;
 
-<<<<<<< HEAD
-import ru.gr0946x.ui.painting.Painter;
-
-=======
 import ru.gr0946x.Converter;
 import ru.gr0946x.ui.painting.FractalPainter;
 import ru.gr0946x.ui.painting.Painter;
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-<<<<<<< HEAD
-public class SelectablePanel extends PaintPanel{
-    private SelectedRect rect = null;
-    private Graphics g;
-
-    private final ArrayList<SelectListener> selectHandlers = new ArrayList<>();
-    public void addSelectListener(SelectListener listener){
-        selectHandlers.add(listener);
-    }
-
-    public void removeSelectListener(SelectListener listener){
-        selectHandlers.remove(listener);
-    }
-=======
 public class SelectablePanel extends PaintPanel {
 
     private SelectedRect rect = null;
@@ -43,23 +24,15 @@ public class SelectablePanel extends PaintPanel {
 
     public void addPanListener(PanListener listener) { panHandlers.add(listener); }
     public void removePanListener(PanListener listener) { panHandlers.remove(listener); }
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
 
     public SelectablePanel(Painter painter) {
         super(painter);
         g = getGraphics();
-<<<<<<< HEAD
-=======
 
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-<<<<<<< HEAD
-                rect = new SelectedRect(e.getX(), e.getY());
-                paintSelectedRect();
-=======
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     rect = new SelectedRect(e.getX(), e.getY());
                     paintSelectedRect();
@@ -68,26 +41,11 @@ public class SelectablePanel extends PaintPanel {
                     panMoved       = false;
                     panStartScreen = e.getPoint();
                 }
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-<<<<<<< HEAD
-                paintSelectedRect();
-                for (var handler : selectHandlers) {
-                    handler.onSelect(new Rectangle(
-                            rect.getUpperLeft().x,
-                            rect.getUpperLeft().y,
-                            rect.getWidth(),
-                            rect.getHeight()
-                            )
-                    );
-                }
-                rect = null;
-
-=======
                 if (e.getButton() == MouseEvent.BUTTON1 && rect != null) {
                     paintSelectedRect();
                     for (var handler : selectHandlers) {
@@ -110,7 +68,6 @@ public class SelectablePanel extends PaintPanel {
                         }
                     }
                 }
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
             }
         });
 
@@ -118,13 +75,6 @@ public class SelectablePanel extends PaintPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e);
-<<<<<<< HEAD
-                paintSelectedRect();
-                if (rect != null){
-                    rect.setLastPoint(e.getX(), e.getY());
-                }
-                paintSelectedRect();
-=======
                 if (rect != null) {
                     paintSelectedRect();
                     rect.setLastPoint(e.getX(), e.getY());
@@ -151,7 +101,6 @@ public class SelectablePanel extends PaintPanel {
                     repaint();
                     panStartScreen = e.getPoint();
                 }
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
             }
         });
 
@@ -164,13 +113,8 @@ public class SelectablePanel extends PaintPanel {
         });
     }
 
-<<<<<<< HEAD
-    private void paintSelectedRect(){
-        if (g != null){
-=======
     private void paintSelectedRect() {
         if (g != null && rect != null) {
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
             g.setXORMode(Color.WHITE);
             g.setColor(Color.BLACK);
             g.drawRect(
@@ -182,8 +126,4 @@ public class SelectablePanel extends PaintPanel {
             g.setPaintMode();
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
