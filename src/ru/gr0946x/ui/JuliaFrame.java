@@ -17,6 +17,15 @@ public class JuliaFrame extends JFrame {
     private double offsetX = 0;
     private double offsetY = 0;
 
+    // -----------------------------------------------------------
+    // Статический метод для вызова из основного окна Мандельброта.
+    // Другие участники проекта кликают по точке и вызывают этот метод,
+    // передавая координаты как параметр C для Жюлиа.
+    // -----------------------------------------------------------
+    public static void openJuliaWindow(double realC, double imagC) {
+        SwingUtilities.invokeLater(() -> new JuliaFrame(realC, imagC));
+    }
+
     public JuliaFrame(double realC, double imagC) {
         cValues[0] = realC;
         cValues[1] = imagC;
