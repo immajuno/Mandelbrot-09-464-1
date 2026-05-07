@@ -3,12 +3,6 @@ package ru.gr0946x.ui.painting;
 import ru.gr0946x.Converter;
 import ru.gr0946x.ui.fractals.ColorFunction;
 import ru.gr0946x.ui.fractals.Fractal;
-<<<<<<< HEAD
-
-import java.awt.*;
-
-public class FractalPainter implements Painter{
-=======
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -16,19 +10,15 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class FractalPainter implements Painter {
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
 
     private final Fractal fractal;
     private final Converter conv;
     private final ColorFunction colorFunction;
-<<<<<<< HEAD
-=======
 
     public Converter getConverter() {
         return conv;
     }
 
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
     @Override
     public int getWidth() {
         return conv.getWidth();
@@ -55,23 +45,6 @@ public class FractalPainter implements Painter {
         this.colorFunction = cf;
     }
 
-<<<<<<< HEAD
-    @Override
-    public void paint(Graphics g) {
-        var w = getWidth();
-        var h = getHeight();
-        for (int i = 0; i < w; i++) {
-            for (int j = 0; j < h; j++) {
-                var x = conv.xScr2Crt(i);
-                var y = conv.yScr2Crt(j);
-                var res = fractal.inSetProbability(x, y);
-                g.setColor(colorFunction.getColor(res));
-                g.drawLine(i, j, i + 1, j);
-            }
-        }
-    }
-}
-=======
     /**
      * Рендерит текущее состояние фрактала в BufferedImage заданного размера.
      * Используется при сохранении в файл (п. 5).
@@ -180,4 +153,3 @@ public class FractalPainter implements Painter {
         }
     }
 }
->>>>>>> 3dbaa6c (Внесены итоговые правки, исправлены ошибки в коде, исправлены неработающие функции лабы)
